@@ -15,7 +15,7 @@
 
 import passport from 'passport';
 import { Strategy as FacebookStrategy } from 'passport-facebook';
-import { User, UserLogin, UserClaim, UserProfile } from './data/models';
+import { User, UserLogin, UserClaim, UserProfile } from './data/models/User';
 import config from './config';
 
 /**
@@ -56,6 +56,8 @@ passport.use(
               {
                 id: req.user.id,
                 email: profile._json.email,
+                first_name: profile._json.first_name,
+                last_name: profile._json.last_name,
                 logins: [{ name: loginName, key: profile.id }],
                 claims: [{ type: claimType, value: profile.id }],
                 profile: {
@@ -104,6 +106,8 @@ passport.use(
             } else {
               user = await User.create(
                 {
+                  first_name: profile._json.first_name,
+                  last_name: profile._json.last_name,
                   email: profile._json.email,
                   emailConfirmed: true,
                   logins: [{ name: loginName, key: profile.id }],

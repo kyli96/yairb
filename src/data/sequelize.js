@@ -9,11 +9,17 @@
 
 import Sequelize from 'sequelize';
 import config from '../config';
+import logger from '../logger';
 
-const sequelize = new Sequelize(config.databaseUrl, {
-  define: {
-    freezeTableName: true,
-  },
-});
+const mysql = config.mysql;
+mysql.logging = sql => {
+  logger.debug(sql);
+};
+const sequelize = new Sequelize(
+  mysql.database,
+  mysql.username,
+  mysql.password,
+  mysql,
+);
 
 export default sequelize;

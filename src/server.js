@@ -25,12 +25,12 @@ import errorPageStyle from './routes/error/ErrorPage.css';
 import createFetch from './createFetch';
 import passport from './passport';
 import router from './router';
-import models from './data/models';
 import schema from './data/schema';
 import assets from './assets.json'; // eslint-disable-line import/no-unresolved
 import configureStore from './store/configureStore';
 import { setRuntimeVariable } from './actions/runtime';
 import config from './config';
+import logger from './logger';
 
 const app = express();
 
@@ -63,7 +63,7 @@ app.use(
 app.use((err, req, res, next) => {
   // eslint-disable-line no-unused-vars
   if (err instanceof Jwt401Error) {
-    console.error('[express-jwt-error]', req.cookies.id_token);
+    logger.error('[express-jwt-error]', req.cookies.id_token);
     // `clearCookie`, otherwise user can't use web-app until cookie expires
     res.clearCookie('id_token');
   }
@@ -95,6 +95,10 @@ app.get(
     res.redirect('/');
   },
 );
+app.get('/logout', (req, res) => {
+  res.clearCookie('id_token');
+  res.redirect('/');
+});
 
 //
 // Register API middleware
@@ -198,7 +202,7 @@ pe.skipPackage('express');
 
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
-  console.error(pe.render(err));
+  logger.error({ err, stack: err.stack });
   const html = ReactDOM.renderToStaticMarkup(
     <Html
       title="Internal Server Error"
@@ -215,12 +219,9 @@ app.use((err, req, res, next) => {
 //
 // Launch the server
 // -----------------------------------------------------------------------------
-const promise = models.sync().catch(err => console.error(err.stack));
 if (!module.hot) {
-  promise.then(() => {
-    app.listen(config.port, () => {
-      console.info(`The server is running at http://localhost:${config.port}/`);
-    });
+  app.listen(config.port, () => {
+    logger.info(`The server is running at http://localhost:${config.port}/`);
   });
 }
 
